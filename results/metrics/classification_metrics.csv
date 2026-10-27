@@ -1,0 +1,6 @@
+model_name,accuracy,precision,recall,f1_score,macro_f1,roc_auc,tn,fp,fn,tp,inference_time_ms,training_time_sec
+Logistic Regression,0.94,0.8519,0.92,0.8846,0.922,0.9861,71,4,2,23,3.56,0.52
+Decision Tree Classifier,0.91,0.7857,0.88,0.8302,0.8845,0.9509,69,6,3,22,2.35,1.17
+Random Forest Classifier,0.95,0.9545,0.84,0.8936,0.9305,0.9819,74,1,4,21,39.83,3.87
+Support Vector Classifier (SVM),0.91,0.8077,0.84,0.8235,0.8816,0.9829,70,5,4,21,40.11,45.16
+Random Forest (Tuned),0.94,0.9524,0.8,0.8696,0.9153,0.9808,74,1,5,20,40.34,4.7

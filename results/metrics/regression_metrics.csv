@@ -1,0 +1,6 @@
+model_name,train_mae,train_rmse,train_r2,test_mae,test_rmse,test_r2,inference_time_ms,inference_per_sample_ms,training_time_sec
+Linear Regression (Baseline),14.655,18.237,0.8085,14.798,19.418,0.7652,3.15,0.0315,0.26
+Decision Tree Regressor,8.737,13.726,0.8915,13.437,18.182,0.7941,1.45,0.0145,1.15
+Random Forest Regressor,4.315,6.844,0.973,12.018,16.527,0.8299,58.6,0.586,33.91
+Gradient Boosting Regressor,8.326,12.031,0.9167,12.352,17.17,0.8164,2.66,0.0266,90.18
+Random Forest (Tuned),4.201,6.681,0.9743,12.147,16.738,0.8255,43.27,0.4327,55.2

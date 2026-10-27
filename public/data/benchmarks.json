@@ -1,0 +1,141 @@
+{
+  "regression": [
+    {
+      "model_name": "Linear Regression (Baseline)",
+      "train_mae": 14.655,
+      "train_rmse": 18.237,
+      "train_r2": 0.8085,
+      "test_mae": 14.798,
+      "test_rmse": 19.418,
+      "test_r2": 0.7652,
+      "inference_time_ms": 3.15,
+      "inference_per_sample_ms": 0.0315,
+      "training_time_sec": 0.26
+    },
+    {
+      "model_name": "Decision Tree Regressor",
+      "train_mae": 8.737,
+      "train_rmse": 13.726,
+      "train_r2": 0.8915,
+      "test_mae": 13.437,
+      "test_rmse": 18.182,
+      "test_r2": 0.7941,
+      "inference_time_ms": 1.45,
+      "inference_per_sample_ms": 0.0145,
+      "training_time_sec": 1.15
+    },
+    {
+      "model_name": "Random Forest Regressor",
+      "train_mae": 4.315,
+      "train_rmse": 6.844,
+      "train_r2": 0.973,
+      "test_mae": 12.018,
+      "test_rmse": 16.527,
+      "test_r2": 0.8299,
+      "inference_time_ms": 58.6,
+      "inference_per_sample_ms": 0.586,
+      "training_time_sec": 33.91
+    },
+    {
+      "model_name": "Gradient Boosting Regressor",
+      "train_mae": 8.326,
+      "train_rmse": 12.031,
+      "train_r2": 0.9167,
+      "test_mae": 12.352,
+      "test_rmse": 17.17,
+      "test_r2": 0.8164,
+      "inference_time_ms": 2.66,
+      "inference_per_sample_ms": 0.0266,
+      "training_time_sec": 90.18
+    },
+    {
+      "model_name": "Random Forest (Tuned)",
+      "train_mae": 4.201,
+      "train_rmse": 6.681,
+      "train_r2": 0.9743,
+      "test_mae": 12.147,
+      "test_rmse": 16.738,
+      "test_r2": 0.8255,
+      "inference_time_ms": 43.27,
+      "inference_per_sample_ms": 0.4327,
+      "training_time_sec": 55.2
+    }
+  ],
+  "classification": [
+    {
+      "model_name": "Logistic Regression",
+      "accuracy": 0.94,
+      "precision": 0.8519,
+      "recall": 0.92,
+      "f1_score": 0.8846,
+      "macro_f1": 0.922,
+      "roc_auc": 0.9861,
+      "tn": 71,
+      "fp": 4,
+      "fn": 2,
+      "tp": 23,
+      "inference_time_ms": 3.56,
+      "training_time_sec": 0.52
+    },
+    {
+      "model_name": "Decision Tree Classifier",
+      "accuracy": 0.91,
+      "precision": 0.7857,
+      "recall": 0.88,
+      "f1_score": 0.8302,
+      "macro_f1": 0.8845,
+      "roc_auc": 0.9509,
+      "tn": 69,
+      "fp": 6,
+      "fn": 3,
+      "tp": 22,
+      "inference_time_ms": 2.35,
+      "training_time_sec": 1.17
+    },
+    {
+      "model_name": "Random Forest Classifier",
+      "accuracy": 0.95,
+      "precision": 0.9545,
+      "recall": 0.84,
+      "f1_score": 0.8936,
+      "macro_f1": 0.9305,
+      "roc_auc": 0.9819,
+      "tn": 74,
+      "fp": 1,
+      "fn": 4,
+      "tp": 21,
+      "inference_time_ms": 39.83,
+      "training_time_sec": 3.87
+    },
+    {
+      "model_name": "Support Vector Classifier (SVM)",
+      "accuracy": 0.91,
+      "precision": 0.8077,
+      "recall": 0.84,
+      "f1_score": 0.8235,
+      "macro_f1": 0.8816,
+      "roc_auc": 0.9829,
+      "tn": 70,
+      "fp": 5,
+      "fn": 4,
+      "tp": 21,
+      "inference_time_ms": 40.11,
+      "training_time_sec": 45.16
+    },
+    {
+      "model_name": "Random Forest (Tuned)",
+      "accuracy": 0.94,
+      "precision": 0.9524,
+      "recall": 0.8,
+      "f1_score": 0.8696,
+      "macro_f1": 0.9153,
+      "roc_auc": 0.9808,
+      "tn": 74,
+      "fp": 1,
+      "fn": 5,
+      "tp": 20,
+      "inference_time_ms": 40.34,
+      "training_time_sec": 4.7
+    }
+  ]
+}

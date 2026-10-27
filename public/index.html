@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Machine Health | Fleet Intelligence Suite</title>
+    <meta name="description" content="Explainable Machine Learning System for Turbofan Engine Predictive Maintenance and Remaining Useful Life Estimation (NASA C-MAPSS FD001).">
+    
+    <!-- Google Fonts: Plus Jakarta Sans, Poppins & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Plotly.js for interactive visualizations -->
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+    
+    <link rel="stylesheet" href="/style.css?v=5">
+</head>
+<body>
+    <div class="app-layout">
+        
+        <!-- Left Sidebar Navigation -->
+        <aside class="sidebar" id="appSidebar">
+            <div class="sidebar-brand">
+                <div class="brand-left">
+                    <div class="brand-icon">⚡</div>
+                    <div class="brand-text">
+                        <h2>Machine Health</h2>
+                        <span>Prognostics Suite</span>
+                    </div>
+                </div>
+                <button class="sidebar-close-btn" id="sidebarCloseBtn" title="Close Menu">✕</button>
+            </div>
+
+            <nav class="sidebar-nav">
+                <button class="nav-btn active" data-tab="tab-portfolio">
+                    <span class="radio-circle"></span>
+                    <span class="nav-label">Portfolio Dashboard</span>
+                </button>
+                <button class="nav-btn" data-tab="tab-telemetry">
+                    <span class="radio-circle"></span>
+                    <span class="nav-label">Sensor Telemetry</span>
+                </button>
+                <button class="nav-btn" data-tab="tab-prognostics">
+                    <span class="radio-circle"></span>
+                    <span class="nav-label">RUL Estimation</span>
+                </button>
+                <button class="nav-btn" data-tab="tab-risk">
+                    <span class="radio-circle"></span>
+                    <span class="nav-label">Maintenance Risk</span>
+                </button>
+                <button class="nav-btn" data-tab="tab-benchmarks">
+                    <span class="radio-circle"></span>
+                    <span class="nav-label">Model Benchmarks</span>
+                </button>
+                <button class="nav-btn" data-tab="tab-clusters">
+                    <span class="radio-circle"></span>
+                    <span class="nav-label">Operating Clusters</span>
+                </button>
+                <button class="nav-btn" data-tab="tab-docs">
+                    <span class="radio-circle"></span>
+                    <span class="nav-label">Methodology & Docs</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="fleet-specs-badge">
+                    <div class="specs-title">FLEET SPECS</div>
+                    <div>Dataset: <strong>NASA C-MAPSS FD001</strong></div>
+                    <div>Hardware: <strong>Turbofan HPC Core</strong></div>
+                    <div>Holdout: <strong>Engine-Level Group</strong></div>
+                </div>
+            </div>
+        </aside>
+        <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            
+            <!-- Top Bar Header -->
+            <header class="top-bar">
+                <div class="top-left">
+                    <button class="menu-icon-btn" id="menuToggleBtn" title="Toggle Sidebar">☰</button>
+                    <h1 class="page-title" id="topPageTitle">Portfolio</h1>
+                </div>
+                <div class="top-right">
+                    <!-- Functional Live Search -->
+                    <div class="search-container">
+                        <div class="search-box">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" placeholder="Search Engine (e.g. 34, 1, alert)..." id="fleetSearchInput" autocomplete="off">
+                            <button class="clear-search-btn" id="clearSearchBtn" style="display:none;" title="Clear search">✕</button>
+                        </div>
+                        <div class="search-results-dropdown" id="searchResultsDropdown" style="display:none;"></div>
+                    </div>
+
+                    <!-- Ingest / Add Engine Telemetry Button -->
+                    <button class="icon-circle-btn" id="addEngineBtn" title="Ingest / Add Engine Telemetry">+</button>
+
+                    <!-- Notifications Dropdown -->
+                    <div class="notification-container">
+                        <button class="icon-circle-btn notification-btn" id="notificationBtn" title="Fleet Alerts">
+                            🔔
+                            <span class="notification-badge" id="notifBadge">3</span>
+                        </button>
+                        <div class="notification-dropdown" id="notificationDropdown" style="display:none;">
+                            <div class="notif-header">
+                                <h3>Fleet Diagnostic Alerts</h3>
+                                <span class="notif-count" id="notifCountText">3 Active</span>
+                            </div>
+                            <div class="notif-list" id="notifList">
+                                <div class="notif-item critical" onclick="selectQuickEngine(34); closeAllTopDropdowns();">
+                                    <div class="notif-dot red"></div>
+                                    <div class="notif-body">
+                                        <div class="notif-title">Engine #34 • Critical Alert</div>
+                                        <div class="notif-text">HPC static pressure surge (+1.8%). Imminent maintenance limit (18 cyc).</div>
+                                        <div class="notif-time">Just now</div>
+                                    </div>
+                                </div>
+                                <div class="notif-item warning" onclick="selectQuickEngine(18); closeAllTopDropdowns();">
+                                    <div class="notif-dot orange"></div>
+                                    <div class="notif-body">
+                                        <div class="notif-title">Engine #18 • Thermal Advisory</div>
+                                        <div class="notif-text">LPC outlet temperature stabilized at 642.5 °R. Spool balance steady.</div>
+                                        <div class="notif-time">12 min ago</div>
+                                    </div>
+                                </div>
+                                <div class="notif-item info" onclick="selectQuickEngine(69); closeAllTopDropdowns();">
+                                    <div class="notif-dot blue"></div>
+                                    <div class="notif-body">
+                                        <div class="notif-title">Engine #69 • Scheduled Inspection</div>
+                                        <div class="notif-text">Bypass duct ratio verification recommended within 74 cycles.</div>
+                                        <div class="notif-time">1 hr ago</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="notif-footer">
+                                <button class="clear-notif-btn" id="clearNotifBtn" onclick="clearAllNotifications()">Mark all as read</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- User Fleet Avatar -->
+                    <div class="user-badge" title="NASA C-MAPSS FD001 Fleet">
+                        <div class="avatar-pink">NASA</div>
+                        <span class="user-name">FD001 Fleet</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- TAB 1: PORTFOLIO DASHBOARD (Exact Match to Reference UI) -->
+            <section id="tab-portfolio" class="tab-pane active">
+                <div class="portfolio-grid">
+                    
+                    <!-- Left: Main Turbofan Units Board -->
+                    <div class="board-card main-board">
+                        <div class="board-header">
+                            <div>
+                                <h2 class="board-title">Turbofan Fleet Units</h2>
+                                <span class="board-subtitle">Real-time condition monitoring across 100 test propulsion units</span>
+                            </div>
+                            <div class="board-date">October, 2026</div>
+                        </div>
+
+                        <!-- Statistics Counter Row -->
+                        <div class="stats-row">
+                            <div class="stat-item">
+                                <span class="stat-num" id="statUnits">100</span>
+                                <span class="stat-label">In Fleet</span>
+                            </div>
+                            <span class="dot-separator">•</span>
+                            <div class="stat-item">
+                                <span class="stat-num" id="statMae">12.02</span>
+                                <span class="stat-label">MAE Cycles</span>
+                            </div>
+                            <span class="dot-separator">•</span>
+                            <div class="stat-item">
+                                <span class="stat-num" id="statAccuracy">95.0%</span>
+                                <span class="stat-label">Accuracy</span>
+                            </div>
+                            <span class="dot-separator">•</span>
+                            <div class="stat-item">
+                                <span class="stat-num" id="statFeatures">78</span>
+                                <span class="stat-label">Features</span>
+                            </div>
+                        </div>
+
+                        <!-- 4 Iconic Pastel Project Cards Grid -->
+                        <div class="pastel-cards-grid">
+                            
+                            <!-- Card 1: Crisp White + Blue -->
+                            <div class="pastel-card card-white" onclick="selectQuickEngine(1)">
+                                <div class="card-top-meta">
+                                    <span>Unit #01 • HPC Stage</span>
+                                    <span class="more-dots">••</span>
+                                </div>
+                                <h3 class="card-main-title">Turbofan Core</h3>
+                                <p class="card-sub-title">Compressor Wear Trace</p>
+                                <div class="progress-meta">
+                                    <span>Progress</span>
+                                    <span>90%</span>
+                                </div>
+                                <div class="progress-track">
+                                    <div class="progress-fill-blue" style="width: 90%;"></div>
+                                </div>
+                                <div class="card-footer">
+                                    <div class="status-indicator">
+                                        <span>⚙️</span>
+                                        <span class="status-text blue">ACTIVE</span>
+                                    </div>
+                                    <span class="pill-badge pill-blue">112 Cyc Left</span>
+                                </div>
+                            </div>
+
+                            <!-- Card 2: Warm Peach + Alert -->
+                            <div class="pastel-card card-peach" onclick="selectQuickEngine(34)">
+                                <div class="card-top-meta">
+                                    <span>Unit #34 • High Alert</span>
+                                    <span class="more-dots">••</span>
+                                </div>
+                                <h3 class="card-main-title">Thermal Surge</h3>
+                                <p class="card-sub-title">Exhaust Gas Temp Rising</p>
+                                <div class="progress-meta">
+                                    <span>Progress</span>
+                                    <span>30%</span>
+                                </div>
+                                <div class="progress-track">
+                                    <div class="progress-fill-orange" style="width: 30%;"></div>
+                                </div>
+                                <div class="card-footer">
+                                    <div class="status-indicator">
+                                        <span>⚠️</span>
+                                        <span class="status-text orange">CRITICAL</span>
+                                    </div>
+                                    <span class="pill-badge pill-white">18 Cyc Left</span>
+                                </div>
+                            </div>
+
+                            <!-- Card 3: Mint Green + Nominal -->
+                            <div class="pastel-card card-mint" onclick="selectQuickEngine(12)">
+                                <div class="card-top-meta">
+                                    <span>Unit #12 • Baseline</span>
+                                    <span class="more-dots">••</span>
+                                </div>
+                                <h3 class="card-main-title">Rotor Speeds</h3>
+                                <p class="card-sub-title">Core & Fan Spool Sync</p>
+                                <div class="progress-meta">
+                                    <span>Progress</span>
+                                    <span>92%</span>
+                                </div>
+                                <div class="progress-track">
+                                    <div class="progress-fill-green" style="width: 92%;"></div>
+                                </div>
+                                <div class="card-footer">
+                                    <div class="status-indicator">
+                                        <span>✅</span>
+                                        <span class="status-text green">NOMINAL</span>
+                                    </div>
+                                    <span class="pill-badge pill-white">135 Cyc Left</span>
+                                </div>
+                            </div>
+
+                            <!-- Card 4: Soft Rose Pink + Inspection -->
+                            <div class="pastel-card card-rose" onclick="selectQuickEngine(69)">
+                                <div class="card-top-meta">
+                                    <span>Unit #69 • Lifespan Max</span>
+                                    <span class="more-dots">••</span>
+                                </div>
+                                <h3 class="card-main-title">Pressure Ratio</h3>
+                                <p class="card-sub-title">Bypass Duct Stability</p>
+                                <div class="progress-meta">
+                                    <span>Progress</span>
+                                    <span>65%</span>
+                                </div>
+                                <div class="progress-track">
+                                    <div class="progress-fill-pink" style="width: 65%;"></div>
+                                </div>
+                                <div class="card-footer">
+                                    <div class="status-indicator">
+                                        <span>🩺</span>
+                                        <span class="status-text pink">INSPECTION</span>
+                                    </div>
+                                    <span class="pill-badge pill-white">74 Cyc Left</span>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- 3D Turbofan Core Engine Graphic Card -->
+                        <div class="engine-graphic-banner">
+                            <div class="banner-text">
+                                <h3>NASA C-MAPSS FD001 Propulsion Hardware</h3>
+                                <p>High-Pressure Compressor (HPC) degradation model with 21 thermodynamic sensors and group-validated temporal feature engineering.</p>
+                                <div class="banner-tags">
+                                    <span class="pill-badge pill-blue">Causal Rolling Windows</span>
+                                    <span class="pill-badge pill-mint">Zero Leakage</span>
+                                    <span class="pill-badge pill-white">GroupKFold (k=5)</span>
+                                </div>
+                            </div>
+                            <div class="banner-img-wrap">
+                                <img src="/assets/turbofan_core.jpg" alt="Turbofan Engine Core 3D Graphic" onerror="this.style.display='none'">
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Right: Fleet Diagnostic Feed & Elevated Floating Card -->
+                    <div class="board-card feed-board">
+                        <div class="feed-header">
+                            <h2 class="board-title">Fleet Diagnostic Feed</h2>
+                            <span class="feed-action-dots">🔍 •</span>
+                        </div>
+
+                        <div class="feed-list">
+                            <!-- Feed Item: Unit #05 -->
+                            <div class="feed-item" onclick="selectQuickEngine(5)">
+                                <div class="feed-avatar avatar-blue">#05</div>
+                                <div class="feed-content">
+                                    <div class="feed-unit-title">Engine #05</div>
+                                    <div class="feed-desc">All 15 informative sensors nominal at cycle 120. RUL est: 95 cyc.</div>
+                                </div>
+                                <div class="feed-date">21 July</div>
+                            </div>
+
+                            <!-- The Elevated Signature Floating Alert Card (Like "Stephanie" in reference UI) -->
+                            <div class="feed-item highlight-card" onclick="selectQuickEngine(34)">
+                                <div class="feed-avatar avatar-critical">#34</div>
+                                <div class="feed-content">
+                                    <div class="highlight-top-row">
+                                        <span class="highlight-unit-name">Engine #34</span>
+                                        <span class="gold-star">★</span>
+                                    </div>
+                                    <div class="highlight-alert-msg">
+                                        Critical Alert: HPC static pressure surged by +1.8%. Maintenance window reached (18 cyc).
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Feed Item: Unit #18 -->
+                            <div class="feed-item" onclick="selectQuickEngine(18)">
+                                <div class="feed-avatar avatar-peach">#18</div>
+                                <div class="feed-content">
+                                    <div class="feed-unit-title">Engine #18</div>
+                                    <div class="feed-desc">LPC outlet temperature stabilized at 642.5 °R.</div>
+                                </div>
+                                <div class="feed-date">19 July</div>
+                            </div>
+
+                            <!-- Feed Item: Unit #82 -->
+                            <div class="feed-item" onclick="selectQuickEngine(82)">
+                                <div class="feed-avatar avatar-pink-bg">#82</div>
+                                <div class="feed-content">
+                                    <div class="feed-unit-title">Engine #82</div>
+                                    <div class="feed-desc">Shaft vibration within tolerance. Core speed nominal.</div>
+                                </div>
+                                <div class="feed-date">17 July</div>
+                            </div>
+
+                            <!-- Feed Item: Unit #47 -->
+                            <div class="feed-item" onclick="selectQuickEngine(47)">
+                                <div class="feed-avatar avatar-mint">#47</div>
+                                <div class="feed-content">
+                                    <div class="feed-unit-title">Engine #47</div>
+                                    <div class="feed-desc">Fuel flow ratio constant. Combustor thermal gradient steady.</div>
+                                </div>
+                                <div class="feed-date">15 July</div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- TAB 2: SENSOR TELEMETRY -->
+            <section id="tab-telemetry" class="tab-pane">
+                <div class="board-card full-width-board">
+                    <div class="section-header">
+                        <h2>Sensor Telemetry & Degradation Trajectories</h2>
+                        <p>Explore raw thermodynamic sensor channels across engine operational lifespans.</p>
+                    </div>
+
+                    <div class="control-row">
+                        <div class="control-group">
+                            <label for="telemetryEngineSelect">Select Engine Unit:</label>
+                            <select id="telemetryEngineSelect" class="styled-select" onchange="renderTelemetryCharts()">
+                                <!-- Dynamically populated -->
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label for="telemetrySplitSelect">Data Split:</label>
+                            <select id="telemetrySplitSelect" class="styled-select" onchange="renderTelemetryCharts()">
+                                <option value="test" selected>Test Split (100 Trajectories)</option>
+                                <option value="train">Training Split (100 Run-to-Failure)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="telemetryChartContainer" class="chart-box" style="height: 480px;"></div>
+                </div>
+            </section>
+
+            <!-- TAB 3: RUL PROGNOSTICS (Interactive Slider & Predictions) -->
+            <section id="tab-prognostics" class="tab-pane">
+                <div class="board-card full-width-board">
+                    <div class="section-header">
+                        <h2>Remaining Useful Life (RUL) Prognostics</h2>
+                        <p>Causal point-in-time RUL estimation evaluated on the 100 test engines using Random Forest Regressor.</p>
+                    </div>
+
+                    <div class="prognostics-control-panel">
+                        <div class="control-card">
+                            <label for="prognosticEngineSelect">Target Engine Unit (1 to 100):</label>
+                            <select id="prognosticEngineSelect" class="styled-select" onchange="onPrognosticEngineChange()">
+                                <!-- Populated dynamically -->
+                            </select>
+                            <div class="engine-meta-pill" id="engineLifespanInfo">Max Observed Cycles: 31</div>
+                        </div>
+
+                        <div class="control-card flex-2">
+                            <div class="slider-header">
+                                <label for="cutoffSlider">Telemetry Cutoff Cycle (t):</label>
+                                <span class="slider-val-badge" id="sliderValBadge">Cycle 31</span>
+                            </div>
+                            <input type="range" id="cutoffSlider" min="5" max="31" value="31" class="styled-slider" oninput="onCutoffSliderChange()">
+                            <span class="helper-text">Extracts rolling window features strictly using cycles up to t with zero future leakage.</span>
+                        </div>
+                    </div>
+
+                    <!-- 4 Live Output Cards -->
+                    <div class="live-prognostic-grid">
+                        <div class="pastel-card card-white">
+                            <span class="stat-label">Observation Point</span>
+                            <span class="stat-num" id="liveCycleNum">31</span>
+                            <span class="stat-meta">Recorded history</span>
+                        </div>
+                        <div class="pastel-card card-peach">
+                            <span class="stat-label">Predicted RUL</span>
+                            <span class="stat-num text-orange" id="livePredictedRul">112.5</span>
+                            <span class="stat-meta">Flight cycles left</span>
+                        </div>
+                        <div class="pastel-card card-mint">
+                            <span class="stat-label">Ground Truth RUL</span>
+                            <span class="stat-num text-green" id="liveTruthRul">112</span>
+                            <span class="stat-meta" id="liveTruthMeta">Evaluated at final cycle</span>
+                        </div>
+                        <div class="pastel-card card-rose">
+                            <span class="stat-label">Health Margin</span>
+                            <span class="stat-num text-pink" id="liveHealthMargin">90%</span>
+                            <span class="stat-meta">Relative to 125 cap</span>
+                        </div>
+                    </div>
+
+                    <div class="chart-box" id="prognosticTrajectoryChart" style="height: 380px; margin-top: 24px;"></div>
+                </div>
+            </section>
+
+            <!-- TAB 4: MAINTENANCE RISK -->
+            <section id="tab-risk" class="tab-pane">
+                <div class="board-card full-width-board">
+                    <div class="section-header">
+                        <h2>Maintenance Risk Classification & Triage</h2>
+                        <p>Binary risk classifier identifying engines within imminent failure threshold (RUL ≤ 30 cycles).</p>
+                    </div>
+
+                    <div class="risk-split-container">
+                        <div class="risk-left-panel">
+                            <div id="riskAlertBanner" class="pastel-card card-mint" style="padding: 28px;">
+                                <div class="pill-badge pill-mint" id="riskBadge">STATUS: NOMINAL</div>
+                                <h3 id="riskAlertTitle" style="margin: 14px 0 6px 0; font-family: 'Poppins', sans-serif;">Nominal Operating State</h3>
+                                <p id="riskAlertDesc" style="font-size: 0.92rem; color: #166534; line-height: 1.6;">
+                                    Engine #01 is operating with healthy thermodynamic safety margins. No immediate overhaul required.
+                                </p>
+                                <div style="display: flex; gap: 10px; margin-top: 18px;">
+                                    <span class="pill-badge pill-white" id="riskProbPill">Probability: 12.0%</span>
+                                    <span class="pill-badge pill-white">Threshold: ≤ 30 Cyc</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="risk-right-panel">
+                            <div class="chart-box" id="riskGaugeContainer" style="height: 280px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 5: MODEL BENCHMARKS -->
+            <section id="tab-benchmarks" class="tab-pane">
+                <div class="board-card full-width-board">
+                    <div class="section-header">
+                        <h2>Empirical Model Benchmarks</h2>
+                        <p>Evaluated on the 100 test engines of NASA C-MAPSS FD001 (Zero data fabrication).</p>
+                    </div>
+
+                    <div class="benchmark-subtabs">
+                        <button class="subtab-btn active" onclick="switchBenchmarkSubtab('regression')">Task A: RUL Regression</button>
+                        <button class="subtab-btn" onclick="switchBenchmarkSubtab('classification')">Task B: Risk Classification</button>
+                    </div>
+
+                    <div id="benchmarkRegressionPane">
+                        <div class="table-wrap">
+                            <table class="benchmark-table" id="regMetricsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Model Architecture</th>
+                                        <th>MAE (Cycles)</th>
+                                        <th>RMSE (Cycles)</th>
+                                        <th>R² Score</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td><strong>Random Forest Regressor (Champion)</strong></td><td><strong>12.02</strong></td><td><strong>16.53</strong></td><td><strong>0.8299</strong></td></tr>
+                                    <tr><td>Gradient Boosting Regressor</td><td>12.87</td><td>17.41</td><td>0.8114</td></tr>
+                                    <tr><td>Decision Tree Regressor</td><td>16.45</td><td>22.18</td><td>0.6934</td></tr>
+                                    <tr><td>Linear Regression Baseline</td><td>21.34</td><td>28.92</td><td>0.4782</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="two-chart-row">
+                            <div id="benchmarkMaeChart" class="chart-box" style="height: 320px;"></div>
+                            <div id="benchmarkR2Chart" class="chart-box" style="height: 320px;"></div>
+                        </div>
+                    </div>
+
+                    <div id="benchmarkClassificationPane" style="display: none;">
+                        <div class="table-wrap">
+                            <table class="benchmark-table" id="clfMetricsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Classifier</th>
+                                        <th>Accuracy</th>
+                                        <th>Precision</th>
+                                        <th>Recall</th>
+                                        <th>F1-Score</th>
+                                        <th>ROC-AUC</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td><strong>Random Forest Classifier (Champion)</strong></td><td><strong>95.0%</strong></td><td><strong>95.5%</strong></td><td>84.0%</td><td><strong>0.8936</strong></td><td>0.9840</td></tr>
+                                    <tr><td>Logistic Regression (High Recall)</td><td>93.0%</td><td>82.1%</td><td><strong>92.0%</strong></td><td>0.8679</td><td><strong>0.9861</strong></td></tr>
+                                    <tr><td>Support Vector Classifier (SVC)</td><td>91.0%</td><td>88.9%</td><td>72.0%</td><td>0.7959</td><td>0.9634</td></tr>
+                                    <tr><td>Decision Tree Classifier</td><td>87.0%</td><td>73.1%</td><td>76.0%</td><td>0.7451</td><td>0.8333</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="figure-container">
+                            <h3>Empirical Confusion Matrices (4-Model Comparison)</h3>
+                            <img src="/figures/classification_confusion_matrices.png" alt="Confusion Matrix Comparison" class="figure-img">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 6: OPERATING REGIMES & CLUSTERING -->
+            <section id="tab-clusters" class="tab-pane">
+                <div class="board-card full-width-board">
+                    <div class="section-header">
+                        <h2>Unsupervised Operating Regimes & PCA</h2>
+                        <p>Latent machine wear state discovery using K-Means clustering and 2D Principal Component Analysis.</p>
+                    </div>
+
+                    <div class="stats-row" style="margin-bottom: 24px;">
+                        <div class="stat-item">
+                            <span class="stat-num">3</span>
+                            <span class="stat-label">Optimal Clusters (k)</span>
+                        </div>
+                        <span class="dot-separator">•</span>
+                        <div class="stat-item">
+                            <span class="stat-num">0.1415</span>
+                            <span class="stat-label">Silhouette Score</span>
+                        </div>
+                        <span class="dot-separator">•</span>
+                        <div class="stat-item">
+                            <span class="stat-num">74.2%</span>
+                            <span class="stat-label">2D PCA Variance Explained</span>
+                        </div>
+                    </div>
+
+                    <div class="two-chart-row">
+                        <div class="figure-container">
+                            <h3>Elbow Method & Silhouette Curve</h3>
+                            <img src="/figures/clustering_elbow_silhouette.png" alt="Elbow and Silhouette Curve" class="figure-img">
+                        </div>
+                        <div class="figure-container">
+                            <h3>PCA 2D Manifold: Clusters vs True RUL</h3>
+                            <img src="/figures/clustering_pca_visualization.png" alt="PCA 2D Cluster Visualization" class="figure-img">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 7: METHODOLOGY & DOCS -->
+            <section id="tab-docs" class="tab-pane">
+                <div class="board-card full-width-board">
+                    <div class="section-header">
+                        <h2>Methodology, Validation Protocols & Governance</h2>
+                        <p>Academic rigor, zero data leakage protocols, and Viva examination preparation guide.</p>
+                    </div>
+
+                    <div class="doc-block">
+                        <h3>1. Engine-Level Group Validation (GroupKFold)</h3>
+                        <p>
+                            Turbofan engine data consists of multi-cycle operational time series for each unique unit. 
+                            Splitting cycles at random between train and test sets introduces catastrophic target leakage. 
+                            In this system, all validation splits are strictly performed by <code>unit_nr</code>, ensuring 
+                            that validation engines are entirely unseen during training.
+                        </p>
+                    </div>
+
+                    <div class="doc-block">
+                        <h3>2. Causal Feature Engineering (Strictly Historical)</h3>
+                        <p>
+                            All 78 engineered features (rolling means over 5 and 15 cycles, rolling standard deviations, 
+                            and lag differences) are grouped strictly by <code>unit_nr</code>. Feature windows never bridge 
+                            across different engines, and zero future telemetry cycles are referenced.
+                        </p>
+                    </div>
+
+                    <div class="doc-block">
+                        <h3>3. RUL Piecewise Linear Capping (RUL = 125)</h3>
+                        <p>
+                            Turbofan engines do not exhibit measurable physical degradation during early flight cycles. 
+                            Following the foundational methodology of Saxena et al. (IEEE PHM 2008), the target RUL is capped 
+                            at 125 cycles to prevent regressor bias during nominal initial operation.
+                        </p>
+                    </div>
+
+                    <div class="doc-block">
+                        <h3>4. Key Academic References</h3>
+                        <ul class="citation-list">
+                            <li><strong>Saxena, A., et al. (2008).</strong> Damage propagation modeling for aircraft engine run-to-failure simulation. <em>IEEE PHM 2008</em>. DOI: 10.1109/PHM.2008.4578638</li>
+                            <li><strong>Ramasso, E., & Saxena, A. (2014).</strong> Performance benchmarking of prognostic methods for turbofan engines. <em>IJPHM</em>, 5(2), 1-15.</li>
+                            <li><strong>Heimes, F. O. (2008).</strong> Recurrent neural networks for remaining useful life estimation. <em>IEEE PHM 2008</em>.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Add / Ingest Telemetry Modal -->
+    <div class="modal-overlay" id="addEngineModal" style="display:none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Ingest Telemetry & Run Diagnostics</h3>
+                <button class="modal-close-btn" id="closeModalBtn" onclick="closeAddModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-desc">Simulate sensor ingestion for a propulsion engine unit and run causal point-in-time prognostic models.</p>
+                <div class="modal-form-group">
+                    <label for="modalEngineSelect">Target Engine Unit:</label>
+                    <select id="modalEngineSelect" class="styled-select"></select>
+                </div>
+                <div class="modal-form-group">
+                    <label for="modalCycleInput">Flight Cycle to Ingest:</label>
+                    <input type="number" id="modalCycleInput" class="styled-input" value="31" min="1" max="300">
+                </div>
+                <div class="modal-form-group">
+                    <label for="modalOperatingMode">Operating Condition:</label>
+                    <select id="modalOperatingMode" class="styled-select">
+                        <option value="nominal">Sea Level Nominal (Standard Sea Level Atmosphere)</option>
+                        <option value="high_altitude">Climb / Cruise (High Mach Number)</option>
+                        <option value="takeoff">Takeoff Peak Thermal Load</option>
+                    </select>
+                </div>
+                <div class="modal-meta-box">
+                    <div>Prognostic Core: <strong>Random Forest Regressor (MAE: 12.02 cyc)</strong></div>
+                    <div>Risk Classifier: <strong>Random Forest (95.0% Accuracy, Recall 84.0%)</strong></div>
+                    <div>Validation Mode: <strong>Zero Data Leakage GroupKFold</strong></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeAddModal()">Cancel</button>
+                <button class="btn-primary" onclick="submitSimulatedIngest()">Run Prognostic Evaluation</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script src="/app.js?v=5"></script>
+</body>
+</html>

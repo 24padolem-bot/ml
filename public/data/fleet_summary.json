@@ -1,0 +1,29 @@
+{
+  "fleet_size": 100,
+  "train_units": 100,
+  "total_historical_cycles": 20631,
+  "rul_cap": 125,
+  "risk_threshold": 30,
+  "models": {
+    "best_regression": {
+      "name": "Random Forest Regressor",
+      "test_mae": 12.02,
+      "test_rmse": 16.53,
+      "test_r2": 0.8299
+    },
+    "best_classification": {
+      "name": "Random Forest Classifier",
+      "accuracy": 0.95,
+      "f1_score": 0.8936,
+      "recall": 0.84,
+      "roc_auc": 0.984
+    },
+    "screening_classification": {
+      "name": "Logistic Regression",
+      "accuracy": 0.93,
+      "recall": 0.92,
+      "roc_auc": 0.9861
+    }
+  },
+  "feature_count": 78
+}

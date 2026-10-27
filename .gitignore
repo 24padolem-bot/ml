@@ -1,0 +1,28 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Caches and virtual environments
+.venv/
+venv/
+ENV/
+env/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# Streamlit config / cache
+.streamlit/
+
+# OS specific files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Large raw datasets or checkpoints (optional exclusion if required)
+# Note: NASA raw dataset files can be reproduced via download scripts
+# data/raw/*.txt
